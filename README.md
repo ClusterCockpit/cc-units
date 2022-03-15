@@ -80,7 +80,7 @@ Prefixes for `%` or `percent` are ignored.
 
 ```go
 const (
-	Base  Prefix = iota
+	Base  Prefix = 1
 	Exa          = 1e18
 	Peta         = 1e15
 	Tera         = 1e12
