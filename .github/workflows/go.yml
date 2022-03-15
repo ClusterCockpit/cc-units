@@ -1,0 +1,54 @@
+# See: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+
+# Workflow name
+name: Run # See: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actionsTests
+
+# Run on event push
+on: push
+
+jobs:
+  #
+  # Job build-1-17
+  # Build on latest Ubuntu using golang version 1.17
+  #
+  build-1-17:
+    runs-on: ubuntu-latest
+    steps:
+    # See: https://github.com/marketplace/actions/checkout
+    # Checkout git repository and submodules
+    - uses: actions/checkout@v2
+
+    # See: https://github.com/marketplace/actions/setup-go-environment
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '^1.17.7'
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
+
+  #
+  # Job build-1-16
+  # Build on latest Ubuntu using golang version 1.16
+  #
+  build-1-16:
+    runs-on: ubuntu-latest
+    steps:
+    # See: https://github.com/marketplace/actions/checkout
+    # Checkout git repository and submodules
+    - uses: actions/checkout@v2
+
+    # See: https://github.com/marketplace/actions/setup-go-environment
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '^1.16.7' # The version AlmaLinux 8.5 uses
+
+    - name: Build
+      run: go build -v ./...
+
+    - name: Test
+      run: go test -v ./...
