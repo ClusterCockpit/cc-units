@@ -5,7 +5,7 @@ import "regexp"
 type Measure int
 
 const (
-	None Measure = iota
+	InvalidMeasure Measure = iota
 	Bytes
 	Flops
 	Percentage
@@ -25,7 +25,7 @@ const (
 func (m *Measure) String() string {
 	switch *m {
 	case Bytes:
-		return "Bytes"
+		return "byte"
 	case Flops:
 		return "Flops"
 	case Percentage:
@@ -52,6 +52,8 @@ func (m *Measure) String() string {
 		return "Packets"
 	case Events:
 		return "Events"
+	case InvalidMeasure:
+		return "Invalid"
 	default:
 		return "Unknown"
 	}
@@ -60,7 +62,7 @@ func (m *Measure) String() string {
 func (m *Measure) Short() string {
 	switch *m {
 	case Bytes:
-		return "Bytes"
+		return "B"
 	case Flops:
 		return "Flops"
 	case Percentage:
@@ -87,6 +89,8 @@ func (m *Measure) Short() string {
 		return "packets"
 	case Events:
 		return "events"
+	case InvalidMeasure:
+		return "Invalid"
 	default:
 		return "Unknown"
 	}
@@ -180,5 +184,5 @@ func NewMeasure(unit string) Measure {
 	if match != nil {
 		return Events
 	}
-	return None
+	return InvalidMeasure
 }

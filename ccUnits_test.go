@@ -24,7 +24,7 @@ func TestUnitsExact(t *testing.T) {
 		{"GB", NewUnit("GBytes")},
 		{"Hz", NewUnit("Hertz")},
 		{"MHz", NewUnit("MHertz")},
-		{"GHertz", NewUnit("GHertz")},
+		{"GHz", NewUnit("GHertz")},
 		{"pkts", NewUnit("Packets")},
 		{"packets", NewUnit("Packets")},
 		{"packet", NewUnit("Packets")},
@@ -44,7 +44,7 @@ func TestUnitsExact(t *testing.T) {
 		{"event", NewUnit("events")},
 		{"EveNts", NewUnit("events")},
 		{"reqs", NewUnit("requests")},
-		{"requests", NewUnit("requests")},
+		{"reQuEsTs", NewUnit("requests")},
 		{"Requests", NewUnit("requests")},
 		{"cyc", NewUnit("cycles")},
 		{"cy", NewUnit("cycles")},
@@ -79,7 +79,7 @@ func TestUnitsExact(t *testing.T) {
 	}
 }
 
-func TestUnitsDifferentPrefix(t *testing.T) {
+func TestUnitUnitConversion(t *testing.T) {
 	testCases := []struct {
 		in           string
 		want         Unit
@@ -97,7 +97,7 @@ func TestUnitsDifferentPrefix(t *testing.T) {
 	}
 	compareUnitWithPrefix := func(in, out Unit, factor float64) bool {
 		if in.getMeasure() == out.getMeasure() && in.getDivMeasure() == out.getDivMeasure() {
-			if f := GetPrefixFactor(in.getPrefix(), out.getPrefix()); f(1.0) == factor {
+			if f := GetPrefixPrefixFactor(in.getPrefix(), out.getPrefix()); f(1.0) == factor {
 				return true
 			} else {
 				fmt.Println(f(1.0))
@@ -108,7 +108,73 @@ func TestUnitsDifferentPrefix(t *testing.T) {
 	for _, c := range testCases {
 		u := NewUnit(c.in)
 		if (!u.Valid()) || (!compareUnitWithPrefix(u, c.want, c.prefixFactor)) {
-			t.Errorf("func NewUnit(%q) == %q, want %q with factor %f", c.in, u.String(), c.want.String(), c.prefixFactor)
+			t.Errorf("GetPrefixPrefixFactor(%q, %q) invalid, want %q with factor %f", c.in, u.String(), c.want.String(), c.prefixFactor)
+		}
+	}
+}
+
+func TestUnitPrefixConversion(t *testing.T) {
+	testCases := []struct {
+		in           string
+		want         string
+		prefixFactor float64
+		wantUnit     Unit
+	}{
+		{"KBytes", "", 1000, NewUnit("Bytes")},
+		{"MBytes", "", 1e6, NewUnit("Bytes")},
+		{"MBytes", "G", 1e-3, NewUnit("GBytes")},
+		{"mb", "M", 1, NewUnit("MBytes")},
+	}
+	compareUnitPrefix := func(in Unit, out Prefix, factor float64, outUnit Unit) bool {
+		if in.Valid() {
+			conv, unit := GetUnitPrefixFactor(in, out)
+			value := conv(1.0)
+			if value == factor && unit.String() == outUnit.String() {
+				return true
+			}
+		}
+		return false
+	}
+	for _, c := range testCases {
+		u := NewUnit(c.in)
+		p := NewPrefix(c.want)
+		if (!u.Valid()) || (!compareUnitPrefix(u, p, c.prefixFactor, c.wantUnit)) {
+			t.Errorf("GetUnitPrefixFactor(%q, %q) invalid, want %q with factor %f", c.in, p.Prefix(), c.wantUnit.String(), c.prefixFactor)
+		}
+
+	}
+}
+
+func TestPrefixPrefixConversion(t *testing.T) {
+	testCases := []struct {
+		in           string
+		want         string
+		prefixFactor float64
+	}{
+		{"K", "", 1000},
+		{"M", "", 1e6},
+		{"M", "G", 1e-3},
+		{"", "M", 1e-6},
+		{"", "m", 1e3},
+		{"m", "n", 1e6},
+		//{"", "n", 1e9} does not work because of IEEE rounding problems
+	}
+	comparePrefixPrefix := func(in Prefix, out Prefix, factor float64) bool {
+		if in != InvalidPrefix && out != InvalidPrefix {
+			conv := GetPrefixPrefixFactor(in, out)
+			value := conv(1.0)
+			fmt.Println("1.0 -> ", value, ", want ", factor)
+			if value == factor {
+				return true
+			}
+		}
+		return false
+	}
+	for _, c := range testCases {
+		i := NewPrefix(c.in)
+		o := NewPrefix(c.want)
+		if !comparePrefixPrefix(i, o, c.prefixFactor) {
+			t.Errorf("GetPrefixPrefixFactor(%q, %q) invalid, want %q with factor %f", c.in, c.want, o.Prefix(), c.prefixFactor)
 		}
 	}
 }

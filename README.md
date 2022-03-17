@@ -5,8 +5,10 @@ When working with metrics, the problem comes up that they may use different unit
 In order to enable unit comparison and conversion, the ccUnits package provides some helpers:
 There are basically two important functions:
 ```go
-NewUnit(unit string) Unit
-GetUnitPrefixFactor(in Unit, out Unit) (func(value float64) float64, error) // Get conversion function for the value
+NewUnit(unit string) Unit // create a new unit from some string like 'GHz', 'Mbyte' or 'kevents/s'
+func GetUnitUnitFactor(in Unit, out Unit) (func(value float64) float64, error) // Get conversion function between two units
+func GetPrefixFactor(in Prefix, out Prefix) func(value float64) float64 // Get conversion function between two prefixes
+func GetUnitPrefixFactor(in Unit, out Prefix) (func(value float64) float64, Unit) // Get conversion function for prefix changes and the new unit for further use
 
 type Unit interface {
 	Valid() bool
@@ -26,14 +28,35 @@ v := NewUnit("foo")
 fmt.Println(v.Valid())                   // false
 ```
 
-If you have two units and need the conversion function:
+If you have two units or other components and need the conversion function:
 ```go
+// Get conversion functions for 'kB' to 'MBytes'
 u1 := NewUnit("kB")
 u2 := NewUnit("MBytes")
-convFunc, err := GetUnitPrefixFactor(u1, u2) // Returns an error if the units have different measures
+convFunc, err := GetUnitUnitFactor(u1, u2) // Returns an error if the units have different measures
 if err == nil {
     v2 := convFunc(v1)
+	fmt.Printf("%f %s\n", v2, u2.Short())
 }
+// Get conversion function for 'kB' -> 'G' prefix.
+// Returns the function and the new unit 'GBytes'
+p1 := NewPrefix("G")
+convFunc, u_p1 := GetUnitPrefixFactor(u1, p1)
+// or
+// convFunc, u_p1 := GetUnitPrefixStringFactor(u1, "G")
+if convFunc != nil {
+	v2 := convFunc(v1)
+	fmt.Printf("%f %s\n", v2, u_p1.Short())
+}
+// Get conversion function for two prefixes: 'G' -> 'T'
+p2 := NewPrefix("T")
+convFunc = GetPrefixPrefixFactor(p1, p2)
+if convFunc != nil {
+	v2 := convFunc(v1)
+	fmt.Printf("%f %s -> %f %s\n", v1, p1.Prefix(), v2, p2.Prefix())
+}
+
+
 ```
 
 (In the ClusterCockpit ecosystem the separation between values and units if useful since they are commonly not stored as a single entity but the value is a field in the CCMetric while unit is a tag or a meta information).
