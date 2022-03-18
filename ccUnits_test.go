@@ -66,7 +66,7 @@ func TestUnitsExact(t *testing.T) {
 		{"F/B", NewUnit("flops/Bytes")},
 	}
 	compareUnitExact := func(in, out Unit) bool {
-		if in.getMeasure() == out.getMeasure() && in.getDivMeasure() == out.getDivMeasure() && in.getPrefix() == out.getPrefix() {
+		if in.getMeasure() == out.getMeasure() && in.getUnitDenominator() == out.getUnitDenominator() && in.getPrefix() == out.getPrefix() {
 			return true
 		}
 		return false
@@ -96,7 +96,7 @@ func TestUnitUnitConversion(t *testing.T) {
 		{"mb", NewUnit("MBytes"), 1.0},
 	}
 	compareUnitWithPrefix := func(in, out Unit, factor float64) bool {
-		if in.getMeasure() == out.getMeasure() && in.getDivMeasure() == out.getDivMeasure() {
+		if in.getMeasure() == out.getMeasure() && in.getUnitDenominator() == out.getUnitDenominator() {
 			if f := GetPrefixPrefixFactor(in.getPrefix(), out.getPrefix()); f(1.0) == factor {
 				return true
 			} else {

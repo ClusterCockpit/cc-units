@@ -14,7 +14,7 @@ type Unit interface {
 	Valid() bool
 	String() string
 	Short() string
-	AddDivisorUnit(div Measure)
+	AddUnitDenominator(div Measure)
 }
 ```
 
@@ -69,7 +69,7 @@ if err == nil {
     value, ok := metric.GetField("value")
     if ok {
         out_unit = NewUnit(in_unit)
-        out_unit.AddDivisorUnit("seconds")
+        out_unit.AddUnitDenominator("seconds")
 		seconds := timeDiff.Seconds()
         y, err := lp.New(metric.Name()+"_bw",
                          metric.Tags(),
