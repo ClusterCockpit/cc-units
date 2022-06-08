@@ -22,6 +22,7 @@ const (
 	Events
 )
 
+// String returns the long string for the measure like 'Percent' or 'Seconds'
 func (m *Measure) String() string {
 	switch *m {
 	case Bytes:
@@ -59,6 +60,7 @@ func (m *Measure) String() string {
 	}
 }
 
+// Short returns the short string for the measure like 'B' (Bytes), 's' (Time) or 'W' (Watt). Is is recommened to use Short() over String().
 func (m *Measure) Short() string {
 	switch *m {
 	case Bytes:
@@ -126,6 +128,8 @@ var requestsRegex = regexp.MustCompile(requestsRegexStr)
 var packetsRegex = regexp.MustCompile(packetsRegexStr)
 var eventsRegex = regexp.MustCompile(eventsRegexStr)
 
+// NewMeasure creates a new measure out of a string representing a measure like 'Bytes', 'Flops' and 'precent'.
+// It uses regular expressions for matching.
 func NewMeasure(unit string) Measure {
 	var match []string
 	match = bytesRegex.FindStringSubmatch(unit)

@@ -24,12 +24,12 @@ type Unit interface {
 
 var INVALID_UNIT = NewUnit("foobar")
 
-// Check whether a unit is a valid unit. It requires at least a prefix and a measure. The unit denominator is optional
+// Valid checks whether a unit is a valid unit. A unit is valid if it has at least a prefix and a measure. The unit denominator is optional.
 func (u *unit) Valid() bool {
 	return u.prefix != InvalidPrefix && u.measure != InvalidMeasure
 }
 
-// Get the long string for the unit like 'KiloHertz'
+// String returns the long string for the unit like 'KiloHertz' or 'MegaBytes'
 func (u *unit) String() string {
 	if u.divMeasure != InvalidMeasure {
 		return fmt.Sprintf("%s%s/%s", u.prefix.String(), u.measure.String(), u.divMeasure.String())
@@ -38,7 +38,7 @@ func (u *unit) String() string {
 	}
 }
 
-// Get the short string for the unit like 'KHz' (recommened over String()!)
+// Short returns the short string for the unit like 'kHz' or 'MByte'. Is is recommened to use Short() over String().
 func (u *unit) Short() string {
 	if u.divMeasure != InvalidMeasure {
 		return fmt.Sprintf("%s%s/%s", u.prefix.Prefix(), u.measure.Short(), u.divMeasure.Short())
@@ -47,7 +47,9 @@ func (u *unit) Short() string {
 	}
 }
 
-//
+// AddUnitDenominator adds a unit denominator to an exising unit. Can be used if you want to derive e.g. data volume to bandwidths.
+// The data volume is in a Byte unit like 'kByte' and by dividing it by the runtime in seconds, we get the bandwidth. We can use the
+// data volume unit and add 'Second' as unit denominator
 func (u *unit) AddUnitDenominator(div Measure) {
 	u.divMeasure = div
 }
@@ -68,7 +70,8 @@ func (u *unit) getUnitDenominator() Measure {
 	return u.divMeasure
 }
 
-// This creates the default conversion function between two prefixes
+// GetPrefixPrefixFactor creates the default conversion function between two prefixes.
+// It returns a conversation function for the value.
 func GetPrefixPrefixFactor(in Prefix, out Prefix) func(value interface{}) interface{} {
 	var factor = 1.0
 	var in_prefix = float64(in)
@@ -144,14 +147,17 @@ func convertTempF2TempC(value interface{}) interface{} {
 	return value
 }
 
-// If we only have strings with the prefixes, this is a handy wrapper
+// GetPrefixStringPrefixStringFactor is a wrapper for GetPrefixPrefixFactor with string inputs instead
+// of prefixes. It also returns a conversation function for the value.
 func GetPrefixStringPrefixStringFactor(in string, out string) func(value interface{}) interface{} {
 	var i Prefix = NewPrefix(in)
 	var o Prefix = NewPrefix(out)
 	return GetPrefixPrefixFactor(i, o)
 }
 
-// Get the conversion function and resulting unit for a unit and a prefix
+// GetUnitPrefixFactor gets the conversion function and resulting unit for a unit and a prefix. This is
+// the most common case where you have some input unit and want to convert it to the same unit but with
+// a different prefix. The returned unit represents the value after conversation.
 func GetUnitPrefixFactor(in Unit, out Prefix) (func(value interface{}) interface{}, Unit) {
 	outUnit := NewUnit(in.Short())
 	if outUnit.Valid() {
@@ -162,19 +168,23 @@ func GetUnitPrefixFactor(in Unit, out Prefix) (func(value interface{}) interface
 	return nil, INVALID_UNIT
 }
 
-// Get the conversion function and resulting unit for a unit and a prefix as string
+// GetUnitPrefixStringFactor gets the conversion function and resulting unit for a unit and a prefix as string.
+// It is a wrapper for GetUnitPrefixFactor
 func GetUnitPrefixStringFactor(in Unit, out string) (func(value interface{}) interface{}, Unit) {
 	var o Prefix = NewPrefix(out)
 	return GetUnitPrefixFactor(in, o)
 }
 
-// Get the conversion function and resulting unit for a unit and a prefix when both are only string representations
+// GetUnitStringPrefixStringFactor gets the conversion function and resulting unit for a unit and a prefix when both are only string representations.
+// This is just a wrapper for GetUnitPrefixFactor with the given input unit and the desired output prefix.
 func GetUnitStringPrefixStringFactor(in string, out string) (func(value interface{}) interface{}, Unit) {
 	var i = NewUnit(in)
 	return GetUnitPrefixStringFactor(i, out)
 }
 
-// Get the conversion function and (maybe) error for unit to unit conversion
+// GetUnitUnitFactor gets the conversion function and (maybe) error for unit to unit conversion.
+// It is basically a wrapper for GetPrefixPrefixFactor with some special cases for temperature
+// conversion between Fahrenheit and Celsius.
 func GetUnitUnitFactor(in Unit, out Unit) (func(value interface{}) interface{}, error) {
 	if in.getMeasure() == TemperatureC && out.getMeasure() == TemperatureF {
 		return convertTempC2TempF, nil
@@ -186,7 +196,8 @@ func GetUnitUnitFactor(in Unit, out Unit) (func(value interface{}) interface{}, 
 	return GetPrefixPrefixFactor(in.getPrefix(), out.getPrefix()), nil
 }
 
-// Create a new unit out of a string representing a unit like 'Mbyte/s' or 'GHz'.
+// NewUnit creates a new unit out of a string representing a unit like 'Mbyte/s' or 'GHz'.
+// It uses regular expressions to detect the prefix, unit and (maybe) unit denominator.
 func NewUnit(unitStr string) Unit {
 	u := &unit{
 		prefix:     InvalidPrefix,

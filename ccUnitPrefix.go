@@ -31,6 +31,7 @@ const prefixRegexStr = `^([kKmMgGtTpP]?[i]?)(.*)`
 
 var prefixRegex = regexp.MustCompile(prefixRegexStr)
 
+// String returns the long string for the prefix like 'Kilo' or 'Mega'
 func (s *Prefix) String() string {
 	switch *s {
 	case InvalidPrefix:
@@ -72,6 +73,7 @@ func (s *Prefix) String() string {
 	}
 }
 
+// Prefix returns the short string for the prefix like 'K', 'M' or 'G'. Is is recommened to use Prefix() over String().
 func (s *Prefix) Prefix() string {
 	switch *s {
 	case InvalidPrefix:
@@ -113,6 +115,7 @@ func (s *Prefix) Prefix() string {
 	}
 }
 
+// NewPrefix creates a new prefix out of a string representing a unit like 'k', 'K', 'M' or 'G'.
 func NewPrefix(prefix string) Prefix {
 	switch prefix {
 	case "k":
