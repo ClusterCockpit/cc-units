@@ -2,6 +2,7 @@ package ccunits
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 )
 
@@ -75,6 +76,8 @@ func TestUnitsExact(t *testing.T) {
 		u := NewUnit(c.in)
 		if (!u.Valid()) || (!compareUnitExact(u, c.want)) {
 			t.Errorf("func NewUnit(%q) == %q, want %q", c.in, u.String(), c.want.String())
+		} else {
+			t.Logf("NewUnit(%q) == %q", c.in, u.String())
 		}
 	}
 }
@@ -108,7 +111,9 @@ func TestUnitUnitConversion(t *testing.T) {
 	for _, c := range testCases {
 		u := NewUnit(c.in)
 		if (!u.Valid()) || (!compareUnitWithPrefix(u, c.want, c.prefixFactor)) {
-			t.Errorf("GetPrefixPrefixFactor(%q, %q) invalid, want %q with factor %f", c.in, u.String(), c.want.String(), c.prefixFactor)
+			t.Errorf("GetPrefixPrefixFactor(%q, %q) invalid, want %q with factor %g", c.in, u.String(), c.want.String(), c.prefixFactor)
+		} else {
+			t.Logf("GetPrefixPrefixFactor(%q, %q) = %g", c.in, c.want.String(), c.prefixFactor)
 		}
 	}
 }
@@ -139,9 +144,10 @@ func TestUnitPrefixConversion(t *testing.T) {
 		u := NewUnit(c.in)
 		p := NewPrefix(c.want)
 		if (!u.Valid()) || (!compareUnitPrefix(u, p, c.prefixFactor, c.wantUnit)) {
-			t.Errorf("GetUnitPrefixFactor(%q, %q) invalid, want %q with factor %f", c.in, p.Prefix(), c.wantUnit.String(), c.prefixFactor)
+			t.Errorf("GetUnitPrefixFactor(%q, %q) invalid, want %q with factor %g", c.in, p.Prefix(), c.wantUnit.String(), c.prefixFactor)
+		} else {
+			t.Logf("GetUnitPrefixFactor(%q, %q) = %g", c.in, c.wantUnit.String(), c.prefixFactor)
 		}
-
 	}
 }
 
@@ -157,24 +163,39 @@ func TestPrefixPrefixConversion(t *testing.T) {
 		{"", "M", 1e-6},
 		{"", "m", 1e3},
 		{"m", "n", 1e6},
-		//{"", "n", 1e9} does not work because of IEEE rounding problems
-	}
-	comparePrefixPrefix := func(in Prefix, out Prefix, factor float64) bool {
-		if in != InvalidPrefix && out != InvalidPrefix {
-			conv := GetPrefixPrefixFactor(in, out)
-			value := conv(1.0)
-			fmt.Println("1.0 -> ", value, ", want ", factor)
-			if value == factor {
-				return true
-			}
-		}
-		return false
+		//{"", "n", 1e9}, //does not work because of IEEE rounding problems
 	}
 	for _, c := range testCases {
 		i := NewPrefix(c.in)
 		o := NewPrefix(c.want)
-		if !comparePrefixPrefix(i, o, c.prefixFactor) {
-			t.Errorf("GetPrefixPrefixFactor(%q, %q) invalid, want %q with factor %f", c.in, c.want, o.Prefix(), c.prefixFactor)
+		if i != InvalidPrefix && o != InvalidPrefix {
+			conv := GetPrefixPrefixFactor(i, o)
+			value := conv(1.0)
+			if value != c.prefixFactor {
+				t.Errorf("GetPrefixPrefixFactor(%q, %q) invalid, want %q with factor %g but got %g", c.in, c.want, o.Prefix(), c.prefixFactor, value)
+			} else {
+				t.Logf("GetPrefixPrefixFactor(%q, %q) = %g", c.in, c.want, c.prefixFactor)
+			}
 		}
+	}
+}
+
+func TestMeasureRegex(t *testing.T) {
+	for _, data := range MeasuresMap {
+		_, err := regexp.Compile(data.Regex)
+		if err != nil {
+			t.Errorf("failed to compile regex '%s': %s", data.Regex, err.Error())
+		}
+		t.Logf("succussfully compiled regex '%s' for measure %s", data.Regex, data.Long)
+	}
+}
+
+func TestPrefixRegex(t *testing.T) {
+	for _, data := range PrefixDataMap {
+		_, err := regexp.Compile(data.Regex)
+		if err != nil {
+			t.Errorf("failed to compile regex '%s': %s", data.Regex, err.Error())
+		}
+		t.Logf("succussfully compiled regex '%s' for prefix %s", data.Regex, data.Long)
 	}
 }
