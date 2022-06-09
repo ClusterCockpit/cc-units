@@ -1,6 +1,8 @@
 package ccunits
 
-import "regexp"
+import (
+	"regexp"
+)
 
 type Prefix float64
 
@@ -27,148 +29,146 @@ const (
 	Zebi                 = 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024
 	Yobi                 = 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024 * 1024
 )
-const prefixRegexStr = `^([kKmMgGtTpP]?[i]?)(.*)`
+const PrefixUnitSplitRegexStr = `^([kKmMgGtTpPeEzZyY]?[i]?)(.*)`
 
-var prefixRegex = regexp.MustCompile(prefixRegexStr)
+var prefixUnitSplitRegex = regexp.MustCompile(PrefixUnitSplitRegexStr)
+
+type PrefixData struct {
+	Long  string
+	Short string
+	Regex string
+}
+
+// Different names and regex used for input and output
+var InvalidPrefixLong string = "Invalid"
+var InvalidPrefixShort string = "inval"
+var PrefixDataMap map[Prefix]PrefixData = map[Prefix]PrefixData{
+	Base: {
+		Long:  "",
+		Short: "",
+		Regex: "^$",
+	},
+	Kilo: {
+		Long:  "Kilo",
+		Short: "K",
+		Regex: "^[kK]$",
+	},
+	Mega: {
+		Long:  "Mega",
+		Short: "M",
+		Regex: "^[M]$",
+	},
+	Giga: {
+		Long:  "Giga",
+		Short: "G",
+		Regex: "^[gG]$",
+	},
+	Tera: {
+		Long:  "Tera",
+		Short: "T",
+		Regex: "^[tT]$",
+	},
+	Peta: {
+		Long:  "Peta",
+		Short: "P",
+		Regex: "^[pP]$",
+	},
+	Exa: {
+		Long:  "Exa",
+		Short: "E",
+		Regex: "^[eE]$",
+	},
+	Zetta: {
+		Long:  "Zetta",
+		Short: "Z",
+		Regex: "^[zZ]$",
+	},
+	Yotta: {
+		Long:  "Yotta",
+		Short: "Y",
+		Regex: "^[yY]$",
+	},
+	Milli: {
+		Long:  "Milli",
+		Short: "m",
+		Regex: "^[m]$",
+	},
+	Micro: {
+		Long:  "Micro",
+		Short: "u",
+		Regex: "^[u]$",
+	},
+	Nano: {
+		Long:  "Nano",
+		Short: "n",
+		Regex: "^[n]$",
+	},
+	Kibi: {
+		Long:  "Kibi",
+		Short: "Ki",
+		Regex: "^[kK][i]$",
+	},
+	Mebi: {
+		Long:  "Mebi",
+		Short: "Mi",
+		Regex: "^[M][i]$",
+	},
+	Gibi: {
+		Long:  "Gibi",
+		Short: "Gi",
+		Regex: "^[gG][i]$",
+	},
+	Tebi: {
+		Long:  "Tebi",
+		Short: "Ti",
+		Regex: "^[tT][i]$",
+	},
+	Pebi: {
+		Long:  "Pebi",
+		Short: "Pi",
+		Regex: "^[pP][i]$",
+	},
+	Exbi: {
+		Long:  "Exbi",
+		Short: "Ei",
+		Regex: "^[eE][i]$",
+	},
+	Zebi: {
+		Long:  "Zebi",
+		Short: "Zi",
+		Regex: "^[zZ][i]$",
+	},
+	Yobi: {
+		Long:  "Yobi",
+		Short: "Yi",
+		Regex: "^[yY][i]$",
+	},
+}
 
 // String returns the long string for the prefix like 'Kilo' or 'Mega'
-func (s *Prefix) String() string {
-	switch *s {
-	case InvalidPrefix:
-		return "Inval"
-	case Base:
-		return ""
-	case Kilo:
-		return "Kilo"
-	case Mega:
-		return "Mega"
-	case Giga:
-		return "Giga"
-	case Tera:
-		return "Tera"
-	case Peta:
-		return "Peta"
-	case Exa:
-		return "Exa"
-	case Zetta:
-		return "Zetta"
-	case Yotta:
-		return "Yotta"
-	case Milli:
-		return "Milli"
-	case Micro:
-		return "Micro"
-	case Nano:
-		return "Nano"
-	case Kibi:
-		return "Kibi"
-	case Mebi:
-		return "Mebi"
-	case Gibi:
-		return "Gibi"
-	case Tebi:
-		return "Tebi"
-	default:
-		return "Unkn"
+func (p *Prefix) String() string {
+	if data, ok := PrefixDataMap[*p]; ok {
+		return data.Long
 	}
+	return InvalidMeasureLong
 }
 
 // Prefix returns the short string for the prefix like 'K', 'M' or 'G'. Is is recommened to use Prefix() over String().
-func (s *Prefix) Prefix() string {
-	switch *s {
-	case InvalidPrefix:
-		return "<inval>"
-	case Base:
-		return ""
-	case Kilo:
-		return "K"
-	case Mega:
-		return "M"
-	case Giga:
-		return "G"
-	case Tera:
-		return "T"
-	case Peta:
-		return "P"
-	case Exa:
-		return "E"
-	case Zetta:
-		return "Z"
-	case Yotta:
-		return "Y"
-	case Milli:
-		return "m"
-	case Micro:
-		return "u"
-	case Nano:
-		return "n"
-	case Kibi:
-		return "Ki"
-	case Mebi:
-		return "Mi"
-	case Gibi:
-		return "Gi"
-	case Tebi:
-		return "Ti"
-	default:
-		return "<unkn>"
+func (p *Prefix) Prefix() string {
+	if data, ok := PrefixDataMap[*p]; ok {
+		return data.Short
 	}
+	return InvalidMeasureShort
 }
 
 // NewPrefix creates a new prefix out of a string representing a unit like 'k', 'K', 'M' or 'G'.
 func NewPrefix(prefix string) Prefix {
-	switch prefix {
-	case "k":
-		return Kilo
-	case "K":
-		return Kilo
-	case "m":
-		return Milli
-	case "M":
-		return Mega
-	case "g":
-		return Giga
-	case "G":
-		return Giga
-	case "t":
-		return Tera
-	case "T":
-		return Tera
-	case "p":
-		return Peta
-	case "P":
-		return Peta
-	case "e":
-		return Exa
-	case "E":
-		return Exa
-	case "z":
-		return Zetta
-	case "Z":
-		return Zetta
-	case "y":
-		return Yotta
-	case "Y":
-		return Yotta
-	case "u":
-		return Micro
-	case "n":
-		return Nano
-	case "ki":
-		return Kibi
-	case "Ki":
-		return Kibi
-	case "Mi":
-		return Mebi
-	case "gi":
-		return Gibi
-	case "Gi":
-		return Gibi
-	case "Ti":
-		return Tebi
-	case "":
-		return Base
-	default:
-		return InvalidPrefix
+	for p, data := range PrefixDataMap {
+		regex := regexp.MustCompile(data.Regex)
+		match := regex.FindStringSubmatch(prefix)
+		if match != nil {
+			return p
+		}
 	}
+	return InvalidPrefix
 }

@@ -1,9 +1,8 @@
-# ccUnits - A unit system for ClusterCockpit
+# cc-units - A unit system for ClusterCockpit
 
-When working with metrics, the problem comes up that they may use different unit name but have the same unit in fact. There are a lot of real world examples like 'kB' and 'Kbyte'. In CC Metric Collector, the Collectors read data from different sources which may use different units or the programmer specifies a unit for a metric by hand. The ccUnits system is not comparable with the SI unit system. If you are looking for a package for the SI units, see [here](https://pkg.go.dev/github.com/gurre/si).
+When working with metrics, the problem comes up that they may use different unit name but have the same unit in fact. There are a lot of real world examples like 'kB' and 'Kbyte'. In [cc-metric-collector](https://github.com/ClusterCockpit/cc-metric-collector), the collectors read data from different sources which may use different units or the programmer specifies a unit for a metric by hand. The cc-units system is not comparable with the SI unit system. If you are looking for a package for the SI units, see [here](https://pkg.go.dev/github.com/gurre/si).
 
 In order to enable unit comparison and conversion, the ccUnits package provides some helpers:
-There are basically two important functions:
 ```go
 NewUnit(unit string) Unit // create a new unit from some string like 'GHz', 'Mbyte' or 'kevents/s'
 func GetUnitUnitFactor(in Unit, out Unit) (func(value float64) float64, error) // Get conversion function between two units

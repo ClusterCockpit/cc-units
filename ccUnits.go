@@ -1,3 +1,4 @@
+// Unit system for cluster monitoring metrics like bytes, flops and events
 package ccunits
 
 import (
@@ -204,7 +205,7 @@ func NewUnit(unitStr string) Unit {
 		measure:    InvalidMeasure,
 		divMeasure: InvalidMeasure,
 	}
-	matches := prefixRegex.FindStringSubmatch(unitStr)
+	matches := prefixUnitSplitRegex.FindStringSubmatch(unitStr)
 	if len(matches) > 2 {
 		pre := NewPrefix(matches[1])
 		measures := strings.Split(matches[2], "/")
