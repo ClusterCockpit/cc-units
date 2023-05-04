@@ -17,10 +17,10 @@ type Unit interface {
 	String() string
 	Short() string
 	AddUnitDenominator(div Measure)
-	getPrefix() Prefix
-	getMeasure() Measure
-	getUnitDenominator() Measure
-	setPrefix(p Prefix)
+	GetPrefix() Prefix
+	GetMeasure() Measure
+	GetUnitDenominator() Measure
+	SetPrefix(p Prefix)
 }
 
 var INVALID_UNIT = NewUnit("foobar")
@@ -55,19 +55,19 @@ func (u *unit) AddUnitDenominator(div Measure) {
 	u.divMeasure = div
 }
 
-func (u *unit) getPrefix() Prefix {
+func (u *unit) GetPrefix() Prefix {
 	return u.prefix
 }
 
-func (u *unit) setPrefix(p Prefix) {
+func (u *unit) SetPrefix(p Prefix) {
 	u.prefix = p
 }
 
-func (u *unit) getMeasure() Measure {
+func (u *unit) GetMeasure() Measure {
 	return u.measure
 }
 
-func (u *unit) getUnitDenominator() Measure {
+func (u *unit) GetUnitDenominator() Measure {
 	return u.divMeasure
 }
 
@@ -162,8 +162,8 @@ func GetPrefixStringPrefixStringFactor(in string, out string) func(value interfa
 func GetUnitPrefixFactor(in Unit, out Prefix) (func(value interface{}) interface{}, Unit) {
 	outUnit := NewUnit(in.Short())
 	if outUnit.Valid() {
-		outUnit.setPrefix(out)
-		conv := GetPrefixPrefixFactor(in.getPrefix(), out)
+		outUnit.SetPrefix(out)
+		conv := GetPrefixPrefixFactor(in.GetPrefix(), out)
 		return conv, outUnit
 	}
 	return nil, INVALID_UNIT
@@ -187,14 +187,14 @@ func GetUnitStringPrefixStringFactor(in string, out string) (func(value interfac
 // It is basically a wrapper for GetPrefixPrefixFactor with some special cases for temperature
 // conversion between Fahrenheit and Celsius.
 func GetUnitUnitFactor(in Unit, out Unit) (func(value interface{}) interface{}, error) {
-	if in.getMeasure() == TemperatureC && out.getMeasure() == TemperatureF {
+	if in.GetMeasure() == TemperatureC && out.GetMeasure() == TemperatureF {
 		return convertTempC2TempF, nil
-	} else if in.getMeasure() == TemperatureF && out.getMeasure() == TemperatureC {
+	} else if in.GetMeasure() == TemperatureF && out.GetMeasure() == TemperatureC {
 		return convertTempF2TempC, nil
-	} else if in.getMeasure() != out.getMeasure() || in.getUnitDenominator() != out.getUnitDenominator() {
+	} else if in.GetMeasure() != out.GetMeasure() || in.GetUnitDenominator() != out.GetUnitDenominator() {
 		return func(value interface{}) interface{} { return 1.0 }, fmt.Errorf("invalid measures in in and out Unit")
 	}
-	return GetPrefixPrefixFactor(in.getPrefix(), out.getPrefix()), nil
+	return GetPrefixPrefixFactor(in.GetPrefix(), out.GetPrefix()), nil
 }
 
 // NewUnit creates a new unit out of a string representing a unit like 'Mbyte/s' or 'GHz'.
