@@ -20,6 +20,7 @@ const (
 	Requests
 	Packets
 	Events
+	Instructions
 )
 
 type MeasureData struct {
@@ -101,6 +102,11 @@ var MeasuresMap map[Measure]MeasureData = map[Measure]MeasureData{
 		Long:  "Events",
 		Short: "events",
 		Regex: "^([eE][vV]?[eE]?[nN][tT][sS]?)",
+	},
+	Instructions: {
+		Long: "Instructions",
+		Short: "instr",
+		Regex: "^([iI][nN][sS][tT][rR][uU]?[cC]?[tT]?[iI]?[oO]?[nN]?[sS]?)",
 	},
 }
 
